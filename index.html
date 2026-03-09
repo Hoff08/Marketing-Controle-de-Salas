@@ -19,36 +19,35 @@
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            /* Removido o overflow e height fixo para a página toda rolar */
+            min-height: 100vh;
         }
 
         header {
             background: var(--primary);
             color: white;
-            padding: 1rem;
+            padding: 1.5rem;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         main {
             display: flex;
-            flex: 1;
             padding: 20px;
             gap: 20px;
-            overflow: hidden;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: flex-start; /* Alinha o topo das colunas */
         }
 
         /* Seção das Salas */
         .rooms-section {
             flex: 2;
-            overflow-y: auto;
         }
 
         .rooms-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 15px;
         }
 
@@ -85,38 +84,41 @@
 
         .info-record { margin-top: 10px; font-weight: bold; display: none; text-align: center; }
 
-        /* Barra Lateral */
+        /* Barra Lateral (Sticky para acompanhar o scroll no Desktop) */
         .sidebar {
             flex: 1;
             background: var(--card);
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 20px; /* Gruda no topo ao rolar */
         }
 
         .activity-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
 
-        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
 
         .btn-add { background-color: var(--primary); color: white; }
 
-        .activities-list { list-style: none; padding: 0; overflow-y: auto; }
+        .activities-list { list-style: none; padding: 0; }
 
         .activity-item {
             background: #f1f5f9;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             margin-bottom: 10px;
             border-left: 4px solid var(--primary);
             position: relative;
         }
 
-        .delete-act { position: absolute; right: 10px; top: 10px; color: #ef4444; cursor: pointer; font-weight: bold; }
+        .delete-act { position: absolute; right: 10px; top: 10px; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 1.2rem; }
 
+        /* Ajustes para Celular */
         @media (max-width: 768px) {
-            main { flex-direction: column; overflow: auto; }
-            .sidebar { order: -1; }
+            main { flex-direction: column; align-items: stretch; }
+            .sidebar { position: static; order: -1; } /* Atividades ficam em cima no celular */
         }
     </style>
 </head>
@@ -127,43 +129,43 @@
 </header>
 
 <main>
+    <!-- Área das Salas -->
     <section class="rooms-section">
         <div class="rooms-grid" id="roomsGrid"></div>
     </section>
 
+    <!-- Barra Lateral -->
     <aside class="sidebar">
-        <h2>Atividades Especiais</h2>
+        <h2 style="margin-top:0">Atividades Especiais</h2>
         <div class="activity-form">
-            <input type="text" id="actTitle" placeholder="Nome da Atividade">
+            <input type="text" id="actTitle" placeholder="O que vai ter?">
             <select id="actRoom">
                 <option value="">Qual sala?</option>
                 <script>for(let i=1; i<=10; i++) document.write(`<option value="${i}">Sala ${i}</option>`);</script>
             </select>
             <input type="time" id="actTime">
-            <button class="btn-add" onclick="addActivity()">Adicionar na Lista</button>
+            <button class="btn-add" onclick="addActivity()">Adicionar Atividade</button>
         </div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
         <ul class="activities-list" id="activitiesList"></ul>
     </aside>
 </main>
 
 <script>
     // --- LÓGICA DE DATAS E AUTO-RESET ---
-    
     function checkDailyReset() {
         const today = new Date().toLocaleDateString();
         const lastDate = localStorage.getItem('lastAccessDate');
         document.getElementById('currentDate').innerText = today;
 
-        if (lastDate !== today) {
-            // Se for um novo dia, limpa os dados salvos
+        if (lastDate && lastDate !== today) {
             localStorage.removeItem('roomsData');
             localStorage.removeItem('activitiesData');
-            localStorage.setItem('lastAccessDate', today);
         }
+        localStorage.setItem('lastAccessDate', today);
     }
 
     // --- GERENCIAMENTO DE DADOS ---
-
     let roomsData = JSON.parse(localStorage.getItem('roomsData')) || {};
     let activitiesData = JSON.parse(localStorage.getItem('activitiesData')) || [];
 
@@ -173,7 +175,6 @@
     }
 
     // --- FUNÇÕES DAS SALAS ---
-
     function renderRooms() {
         const grid = document.getElementById('roomsGrid');
         grid.innerHTML = '';
@@ -190,7 +191,7 @@
                     <button class="btn-maria" onclick="markRoom(${i}, 'Maria')">Maria</button>
                 </div>
                 <div id="info-${i}" style="display: ${isRecorded ? 'block' : 'none'}" class="info-record">
-                    <p>Gravado por: <span style="color:${isRecorded === 'Vicenzo' ? 'var(--Vicenzo)' : 'var(--maria)'}">${isRecorded}</span></p>
+                    <p>Gravado por: <br><span style="color:${isRecorded === 'Vicenzo' ? 'var(--Vicenzo)' : 'var(--maria)'}">${isRecorded}</span></p>
                     <button class="btn-reset" onclick="resetRoom(${i})">Desfazer</button>
                 </div>
             `;
@@ -211,7 +212,6 @@
     }
 
     // --- FUNÇÕES DE ATIVIDADES ---
-
     function renderActivities() {
         const list = document.getElementById('activitiesList');
         list.innerHTML = '';
@@ -221,7 +221,7 @@
             li.innerHTML = `
                 <span class="delete-act" onclick="removeActivity(${index})">×</span>
                 <strong>${act.title}</strong>
-                <span>Sala ${act.room} - ${act.time}</span>
+                <span>Sala ${act.room} às ${act.time}</span>
             `;
             list.appendChild(li);
         });
@@ -240,7 +240,7 @@
             document.getElementById('actRoom').value = '';
             document.getElementById('actTime').value = '';
         } else {
-            alert("Preencha todos os campos da atividade");
+            alert("Preencha todos os campos!");
         }
     }
 
