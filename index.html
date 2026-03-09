@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary: #2563eb; /* Azul */
-            --vincenzo: #10b981; /* Verde */
+            --Vicenzo: #10b981; /* Verde */
             --maria: #8b5cf6; /* Roxo */
             --bg: #f8fafc;
             --card: #ffffff;
@@ -79,7 +79,7 @@
             transition: opacity 0.2s;
         }
 
-        .btn-vincenzo { background-color: var(--vincenzo); color: white; }
+        .btn-Vicenzo { background-color: var(--Vicenzo); color: white; }
         .btn-maria { background-color: var(--maria); color: white; }
         .btn-reset { background-color: #ef4444; color: white; margin-top: 10px; width: 100%; font-size: 0.8rem; }
 
@@ -186,11 +186,11 @@
             card.innerHTML = `
                 <h3>Sala ${i} ${isRecorded ? '✅' : ''}</h3>
                 <div id="ctrl-${i}" style="display: ${isRecorded ? 'none' : 'flex'}" class="btn-group">
-                    <button class="btn-vincenzo" onclick="markRoom(${i}, 'Vincenzo')">Vincenzo</button>
+                    <button class="btn-Vicenzo" onclick="markRoom(${i}, 'Vicenzo')">Vicenzo</button>
                     <button class="btn-maria" onclick="markRoom(${i}, 'Maria')">Maria</button>
                 </div>
                 <div id="info-${i}" style="display: ${isRecorded ? 'block' : 'none'}" class="info-record">
-                    <p>Gravado por: <span style="color:${isRecorded === 'Vincenzo' ? 'var(--vincenzo)' : 'var(--maria)'}">${isRecorded}</span></p>
+                    <p>Gravado por: <span style="color:${isRecorded === 'Vicenzo' ? 'var(--Vicenzo)' : 'var(--maria)'}">${isRecorded}</span></p>
                     <button class="btn-reset" onclick="resetRoom(${i})">Desfazer</button>
                 </div>
             `;
