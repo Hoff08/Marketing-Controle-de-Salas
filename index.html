@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Gravações Diário</title>
+    <style>
+        :root {
+            --primary: #2563eb; /* Azul */
+            --vincenzo: #10b981; /* Verde */
+            --maria: #8b5cf6; /* Roxo */
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* Seção das Salas */
+        .rooms-section {
+            flex: 2;
+            overflow-y: auto;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .room-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-top: 5px solid #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .room-card.recorded {
+            border-top-color: var(--primary);
+            background-color: #f1f5f9;
+        }
+
+        .room-card h3 { margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 8px; }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn-vincenzo { background-color: var(--vincenzo); color: white; }
+        .btn-maria { background-color: var(--maria); color: white; }
+        .btn-reset { background-color: #ef4444; color: white; margin-top: 10px; width: 100%; font-size: 0.8rem; }
+
+        .info-record { margin-top: 10px; font-weight: bold; display: none; text-align: center; }
+
+        /* Barra Lateral */
+        .sidebar {
+            flex: 1;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+        }
+
+        .activity-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+
+        .btn-add { background-color: var(--primary); color: white; }
+
+        .activities-list { list-style: none; padding: 0; overflow-y: auto; }
+
+        .activity-item {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+
+        .delete-act { position: absolute; right: 10px; top: 10px; color: #ef4444; cursor: pointer; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            main { flex-direction: column; overflow: auto; }
+            .sidebar { order: -1; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Controle de Salas - <span id="currentDate"></span></h1>
+</header>
+
+<main>
+    <section class="rooms-section">
+        <div class="rooms-grid" id="roomsGrid"></div>
+    </section>
+
+    <aside class="sidebar">
+        <h2>Atividades Especiais</h2>
+        <div class="activity-form">
+            <input type="text" id="actTitle" placeholder="Nome da Atividade">
+            <select id="actRoom">
+                <option value="">Qual sala?</option>
+                <script>for(let i=1; i<=10; i++) document.write(`<option value="${i}">Sala ${i}</option>`);</script>
+            </select>
+            <input type="time" id="actTime">
+            <button class="btn-add" onclick="addActivity()">Adicionar na Lista</button>
+        </div>
+        <ul class="activities-list" id="activitiesList"></ul>
+    </aside>
+</main>
+
+<script>
+    // --- LÓGICA DE DATAS E AUTO-RESET ---
+    
+    function checkDailyReset() {
+        const today = new Date().toLocaleDateString();
+        const lastDate = localStorage.getItem('lastAccessDate');
+        document.getElementById('currentDate').innerText = today;
+
+        if (lastDate !== today) {
+            // Se for um novo dia, limpa os dados salvos
+            localStorage.removeItem('roomsData');
+            localStorage.removeItem('activitiesData');
+            localStorage.setItem('lastAccessDate', today);
+        }
+    }
+
+    // --- GERENCIAMENTO DE DADOS ---
+
+    let roomsData = JSON.parse(localStorage.getItem('roomsData')) || {};
+    let activitiesData = JSON.parse(localStorage.getItem('activitiesData')) || [];
+
+    function saveData() {
+        localStorage.setItem('roomsData', JSON.stringify(roomsData));
+        localStorage.setItem('activitiesData', JSON.stringify(activitiesData));
+    }
+
+    // --- FUNÇÕES DAS SALAS ---
+
+    function renderRooms() {
+        const grid = document.getElementById('roomsGrid');
+        grid.innerHTML = '';
+        
+        for (let i = 1; i <= 10; i++) {
+            const isRecorded = roomsData[i];
+            const card = document.createElement('div');
+            card.className = `room-card ${isRecorded ? 'recorded' : ''}`;
+            
+            card.innerHTML = `
+                <h3>Sala ${i} ${isRecorded ? '✅' : ''}</h3>
+                <div id="ctrl-${i}" style="display: ${isRecorded ? 'none' : 'flex'}" class="btn-group">
+                    <button class="btn-vincenzo" onclick="markRoom(${i}, 'Vincenzo')">Vincenzo</button>
+                    <button class="btn-maria" onclick="markRoom(${i}, 'Maria')">Maria</button>
+                </div>
+                <div id="info-${i}" style="display: ${isRecorded ? 'block' : 'none'}" class="info-record">
+                    <p>Gravado por: <span style="color:${isRecorded === 'Vincenzo' ? 'var(--vincenzo)' : 'var(--maria)'}">${isRecorded}</span></p>
+                    <button class="btn-reset" onclick="resetRoom(${i})">Desfazer</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+    }
+
+    function markRoom(num, person) {
+        roomsData[num] = person;
+        saveData();
+        renderRooms();
+    }
+
+    function resetRoom(num) {
+        delete roomsData[num];
+        saveData();
+        renderRooms();
+    }
+
+    // --- FUNÇÕES DE ATIVIDADES ---
+
+    function renderActivities() {
+        const list = document.getElementById('activitiesList');
+        list.innerHTML = '';
+        activitiesData.forEach((act, index) => {
+            const li = document.createElement('li');
+            li.className = 'activity-item';
+            li.innerHTML = `
+                <span class="delete-act" onclick="removeActivity(${index})">×</span>
+                <strong>${act.title}</strong>
+                <span>Sala ${act.room} - ${act.time}</span>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    function addActivity() {
+        const title = document.getElementById('actTitle').value;
+        const room = document.getElementById('actRoom').value;
+        const time = document.getElementById('actTime').value;
+
+        if (title && room && time) {
+            activitiesData.push({ title, room, time });
+            saveData();
+            renderActivities();
+            document.getElementById('actTitle').value = '';
+            document.getElementById('actRoom').value = '';
+            document.getElementById('actTime').value = '';
+        } else {
+            alert("Preencha todos os campos da atividade");
+        }
+    }
+
+    function removeActivity(index) {
+        activitiesData.splice(index, 1);
+        saveData();
+        renderActivities();
+    }
+
+    // --- INICIALIZAÇÃO ---
+    checkDailyReset();
+    renderRooms();
+    renderActivities();
+</script>
+
+</body>
+</html>
