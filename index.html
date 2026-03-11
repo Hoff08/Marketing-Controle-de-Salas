@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Marketing - Colégio Conhecimento</title>
+
+    <!-- ÍCONE PARA A ABA DO NAVEGADOR -->
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <!-- ÍCONE PARA IPHONE/IOS (TELA INICIAL) -->
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <!-- CONFIGURAÇÃO PARA ANDROID/CHROME (TELA INICIAL) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="MKT Conhecimento">
+
     <style>
         :root {
             --primary-red: #9c0c11;
@@ -25,13 +36,21 @@
         header {
             background: var(--primary-red);
             color: var(--white);
-            padding: 1.2rem;
+            padding: 1rem;
             text-align: center;
             box-shadow: 0 3px 6px rgba(0,0,0,0.2);
             border-bottom: 4px solid var(--primary-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
 
-        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; }
+        header img {
+            height: 50px; /* Logo pequena no topo */
+        }
+
+        header h1 { margin: 0; font-size: 1.4rem; text-transform: uppercase; }
 
         main {
             display: flex;
@@ -132,13 +151,15 @@
         @media (max-width: 768px) {
             main { flex-direction: column; }
             .sidebar { position: static; order: -1; width: 100%; box-sizing: border-box;}
+            header h1 { font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Controle Marketing - <span id="displayDate"></span></h1>
+    <img src="logo.png" alt="Logo">
+    <h1>Marketing Conhecimento - <span id="displayDate"></span></h1>
 </header>
 
 <main>
@@ -156,15 +177,14 @@
                 <optgroup label="MATUTINO" id="optMatutino"></optgroup>
                 <optgroup label="VESPERTINO" id="optVespertino"></optgroup>
             </select>
-            <button class="btn-add" id="btnAddActivity">Agendar Agora</button>
+            <button class="btn-add" id="btnAddActivity">Confirmar Agendamento</button>
         </div>
         
-        <h3 style="margin: 20px 0 10px 0; font-size: 1rem; color: #666; border-bottom: 1px solid #eee;">Lista de Atividades do Dia:</h3>
+        <h3 style="margin: 20px 0 10px 0; font-size: 1rem; color: #666; border-bottom: 1px solid #eee;">Agenda do Dia:</h3>
         <ul class="activities-list" id="activitiesList"></ul>
     </aside>
 </main>
 
-<!-- Inclusão do Firebase via Módulos -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
   import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
@@ -183,7 +203,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Variáveis de Controle
   const salasMapa = [
       { id: "311", label: "311 (Turmas 11/14)" }, { id: "312", label: "312 (Turmas 21/13)" },
       { id: "313", label: "313 (Turmas 22/15)" }, { id: "314", label: "314 (Turmas 51/53)" },
@@ -202,139 +221,100 @@
   const hMatutino = ["07:30", "08:00", "08:20", "08:40", "09:00", "09:20", "09:40", "10:00", "10:20", "10:40", "11:00", "11:20"];
   const hVespertino = ["13:15", "13:30", "13:50", "14:10", "14:30", "14:50", "15:10", "15:30", "15:50", "16:10", "16:30", "16:50"];
 
-  // --- LÓGICA DE SINCRONIZAÇÃO EM TEMPO REAL ---
-
   const roomsRef = ref(db, 'rooms');
   const activitiesRef = ref(db, 'activities');
   const metadataRef = ref(db, 'metadata');
 
-  // Verificar Reset Diário Global
   onValue(ref(db, 'metadata/lastReset'), (snapshot) => {
       const today = new Date().toLocaleDateString();
       const lastReset = snapshot.val();
       document.getElementById('displayDate').innerText = today;
-
       if (lastReset && lastReset !== today) {
-          set(roomsRef, null);
-          set(activitiesRef, null);
+          set(roomsRef, null); set(activitiesRef, null);
           set(metadataRef, { lastReset: today });
-      } else if (!lastReset) {
-          set(metadataRef, { lastReset: today });
-      }
+      } else if (!lastReset) set(metadataRef, { lastReset: today });
   });
 
-  // Atualizar Salas na Tela
   onValue(roomsRef, (snapshot) => {
       const data = snapshot.val() || {};
       const grid = document.getElementById('roomsGrid');
       grid.innerHTML = '';
-
       salasMapa.forEach(sala => {
           const recordedBy = data[sala.id];
-          const card = document.createElement('div');
-          card.className = `room-card ${recordedBy ? 'recorded' : ''}`;
-          card.innerHTML = `
-                <h3>Sala ${sala.id}</h3>
-                <p>${sala.label}</p>
-                ${!recordedBy ? `
-                    <div class="btn-group">
-                        <button class="btn-Vicenzo action-record" data-id="${sala.id}" data-user="Vicenzo">Vicenzo</button>
-                        <button class="btn-maria action-record" data-id="${sala.id}" data-user="Maria">Maria</button>
-                    </div>
-                ` : `
-                    <div style="text-align:center; font-weight:bold; color:var(--primary-green);">
-                        ✅ POR: ${recordedBy.toUpperCase()}
-                        <button class="btn-reset action-reset" data-id="${sala.id}">Resetar</button>
-                    </div>
-                `}
-          `;
-          grid.appendChild(card);
+          grid.innerHTML += `
+                <div class="room-card ${recordedBy ? 'recorded' : ''}">
+                    <h3>Sala ${sala.id}</h3>
+                    <p>${sala.label}</p>
+                    ${!recordedBy ? `
+                        <div class="btn-group">
+                            <button class="btn-Vicenzo action-record" data-id="${sala.id}" data-user="Vicenzo">Vicenzo</button>
+                            <button class="btn-maria action-record" data-id="${sala.id}" data-user="Maria">Maria</button>
+                        </div>
+                    ` : `
+                        <div style="text-align:center; font-weight:bold; color:var(--primary-green);">
+                            ✅ POR: ${recordedBy.toUpperCase()}
+                            <button class="btn-reset action-reset" data-id="${sala.id}">Resetar</button>
+                        </div>
+                    `}
+                </div>`;
       });
-
-      // Reatribuir eventos aos botões gerados
-      document.querySelectorAll('.action-record').forEach(b => b.onclick = () => markRoom(b.dataset.id, b.dataset.user));
-      document.querySelectorAll('.action-reset').forEach(b => b.onclick = () => resetRoom(b.dataset.id));
+      document.querySelectorAll('.action-record').forEach(b => b.onclick = () => set(ref(db, 'rooms/' + b.dataset.id), b.dataset.user));
+      document.querySelectorAll('.action-reset').forEach(b => b.onclick = () => remove(ref(db, 'rooms/' + b.dataset.id)));
   });
 
-  // Atualizar Atividades na Tela
   onValue(activitiesRef, (snapshot) => {
       const data = snapshot.val() || {};
       const listEl = document.getElementById('activitiesList');
-      const selectTime = document.getElementById('actTimeSelect');
       const optMat = document.getElementById('optMatutino');
       const optVesp = document.getElementById('optVespertino');
       
-      listEl.innerHTML = '';
-      optMat.innerHTML = '';
-      optVesp.innerHTML = '';
-
+      listEl.innerHTML = ''; optMat.innerHTML = ''; optVesp.innerHTML = '';
       const activitiesArray = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
       
-      // Renderizar seletor de horários (escondendo os ocupados)
       const renderTimeOption = (h, container) => {
-          if (!activitiesArray.some(a => a.time === h)) {
-              container.innerHTML += `<option value="${h}">${h}</option>`;
-          }
+          if (!activitiesArray.some(a => a.time === h)) container.innerHTML += `<option value="${h}">${h}</option>`;
       }
       hMatutino.forEach(h => renderTimeOption(h, optMat));
       hVespertino.forEach(h => renderTimeOption(h, optVesp));
 
-      // Renderizar Lista
       activitiesArray.sort((a,b) => a.time.localeCompare(b.time)).forEach(act => {
           const isVesp = hVespertino.includes(act.time);
-          const li = document.createElement('li');
-          li.className = 'activity-item';
-          li.innerHTML = `
-                <span class="delete-act" data-id="${act.id}">×</span>
-                <span class="period-badge">${isVesp ? 'VESPERTINO' : 'MATUTINO'}</span>
-                <strong>${act.title}</strong>
-                <span style="font-size:0.9rem">Sala: ${act.room} | 🕒 ${act.time}</span>
-                <div class="assign-section">
-                    ${!act.assignedTo ? `
-                        <div class="assign-btns">
-                            <button class="btn-Vicenzo btn-small action-assign" data-id="${act.id}" data-user="Vicenzo">Vicenzo</button>
-                            <button class="btn-maria btn-small action-assign" data-id="${act.id}" data-user="Maria">Maria</button>
-                        </div>
-                    ` : `
-                        <div class="assigned-tag" style="background-color: ${act.assignedTo === 'Vicenzo' ? 'var(--primary-green)' : 'var(--primary-red)'}">
-                            CONFIRMADO: ${act.assignedTo}
-                        </div>
-                        <center><button class="action-assign" data-id="${act.id}" data-user="" style="background:none; color:#999; border:none; font-size:0.6rem; cursor:pointer;">MUDAR</button></center>
-                    `}
-                </div>
-          `;
-          listEl.appendChild(li);
+          listEl.innerHTML += `
+                <li class="activity-item">
+                    <span class="delete-act" onclick="confirmRemove('${act.id}')">×</span>
+                    <span class="period-badge">${isVesp ? 'VESPERTINO' : 'MATUTINO'}</span>
+                    <strong>${act.title}</strong>
+                    <span style="font-size:0.9rem">Sala: ${act.room} | 🕒 ${act.time}</span>
+                    <div class="assign-section">
+                        ${!act.assignedTo ? `
+                            <div class="assign-btns">
+                                <button class="btn-Vicenzo btn-small action-assign" data-id="${act.id}" data-user="Vicenzo">Vicenzo</button>
+                                <button class="btn-maria btn-small action-assign" data-id="${act.id}" data-user="Maria">Maria</button>
+                            </div>
+                        ` : `
+                            <div class="assigned-tag" style="background-color: ${act.assignedTo === 'Vicenzo' ? 'var(--primary-green)' : 'var(--primary-red)'}">
+                                CONFIRMADO: ${act.assignedTo}
+                            </div>
+                            <center><button class="action-assign" data-id="${act.id}" data-user="" style="background:none; color:#999; border:none; font-size:0.6rem; cursor:pointer;">MUDAR</button></center>
+                        `}
+                    </div>
+                </li>`;
       });
-
-      // Eventos Atividades
-      document.querySelectorAll('.delete-act').forEach(b => b.onclick = () => removeActivity(b.dataset.id));
-      document.querySelectorAll('.action-assign').forEach(b => b.onclick = () => assignActivity(b.dataset.id, b.dataset.user));
+      document.querySelectorAll('.action-assign').forEach(b => b.onclick = () => update(ref(db, 'activities/' + b.dataset.id), { assignedTo: b.dataset.user || null }));
   });
 
-  // Funções de Banco de Dados
-  function markRoom(id, user) { set(ref(db, 'rooms/' + id), user); }
-  function resetRoom(id) { remove(ref(db, 'rooms/' + id)); }
-  function removeActivity(id) { if(confirm("Remover?")) remove(ref(db, 'activities/' + id)); }
-  function assignActivity(id, user) { 
-      if(!user) update(ref(db, 'activities/' + id), { assignedTo: null });
-      else update(ref(db, 'activities/' + id), { assignedTo: user }); 
-  }
+  window.confirmRemove = (id) => { if(confirm("Remover?")) remove(ref(db, 'activities/' + id)); };
 
   document.getElementById('btnAddActivity').onclick = () => {
       const title = document.getElementById('actTitle').value;
       const room = document.getElementById('actRoomSelect').value;
       const time = document.getElementById('actTimeSelect').value;
-
       if (title && room && time) {
-          const newActRef = push(activitiesRef);
-          set(newActRef, { title, room, time, assignedTo: null });
+          push(activitiesRef, { title, room, time, assignedTo: null });
           document.getElementById('actTitle').value = '';
-      } else {
-          alert("Preencha tudo!");
-      }
+      } else alert("Preencha tudo!");
   };
 
-  // Preencher Select de Salas uma única vez
   const selectSala = document.getElementById('actRoomSelect');
   selectSala.innerHTML = '<option value="">Selecione a Sala</option>';
   salasMapa.forEach(sala => selectSala.innerHTML += `<option value="${sala.id}">${sala.label}</option>`);
