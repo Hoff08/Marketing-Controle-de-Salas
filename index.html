@@ -5,11 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Marketing - Colégio Conhecimento</title>
 
-    <!-- CONFIGURAÇÕES DE ÍCONE PARA CELULAR -->
-    <link rel="icon" type="image/png" sizes="192x192" href="logo.png">
+    <!-- 1. ABA DO NAVEGADOR (FAVICON) -->
+    <link rel="icon" type="image/png" href="logo.png">
+
+    <!-- 2. IPHONE / APPLE TOUCH ICON (TELA INICIAL) -->
     <link rel="apple-touch-icon" href="logo.png">
-    <meta name="theme-color" content="#9c0c11">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MKT Conhecimento">
+
+    <!-- 3. ANDROID / CHROME (APP ICON / PWA) -->
+    <link rel="icon" type="image/png" sizes="192x192" href="logo.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="logo.png">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#9c0c11">
+    
+    <!-- LINK PARA O MANIFESTO (ESSENCIAL PARA ANDROID) -->
+    <link rel="manifest" href="manifest.json">
 
     <style>
         :root {
@@ -51,7 +63,6 @@
             margin: 0 auto;
         }
 
-        /* Seção das Salas */
         .rooms-section { flex: 2; width: 100%; }
         
         .floor-title {
@@ -91,14 +102,12 @@
         button { 
             cursor: pointer; border: none; border-radius: 6px; padding: 12px; 
             font-weight: bold; text-transform: uppercase; font-size: 0.8rem;
-            transition: 0.2s;
         }
 
         .btn-Vicenzo { background-color: var(--primary-green); color: white; }
         .btn-maria { background-color: var(--primary-red); color: white; }
         .btn-reset { background-color: #444; color: white; margin-top: 10px; padding: 8px; font-size: 0.7rem; }
 
-        /* Sidebar Agenda */
         .sidebar {
             flex: 1;
             background: var(--card);
@@ -130,12 +139,10 @@
 
         .assigned-tag { padding: 10px; border-radius: 6px; color: white; font-weight: bold; text-align: center; font-size: 0.85rem; margin-top: 5px; }
 
-        /* MOBILE */
         @media (max-width: 850px) {
             main { flex-direction: column; }
             .sidebar { position: static; order: -1; width: 100%; box-sizing: border-box; }
             .rooms-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-            header img { height: 30px; }
             header h1 { font-size: 0.9rem; }
         }
     </style>
@@ -144,7 +151,7 @@
 
 <header>
     <img src="logo.png" alt="Logo">
-    <h1>Controle Marketing - <span id="displayDate"></span></h1>
+    <h1>Marketing Conhecimento - <span id="displayDate"></span></h1>
 </header>
 
 <main>
@@ -153,19 +160,17 @@
     <aside class="sidebar">
         <h2 style="margin-top:0; color:var(--primary-red); font-size: 1.2rem;">Agendar Atividade</h2>
         <div class="activity-form">
-            <input type="text" id="actTitle" placeholder="Atividade (Ex: Gravação Aula)">
+            <input type="text" id="actTitle" placeholder="Título da Atividade">
             <select id="actRoomSelect">
                 <option value="">Selecione a Sala</option>
             </select>
             <select id="actTimeSelect">
-                <option value="">Selecione o Horário</option>
+                <option value="">Horário</option>
                 <optgroup label="MATUTINO" id="optMatutino"></optgroup>
                 <optgroup label="VESPERTINO" id="optVespertino"></optgroup>
             </select>
-            <button class="btn-add" id="btnAddActivity">Confirmar Agendamento</button>
+            <button class="btn-add" id="btnAddActivity">Agendar</button>
         </div>
-        
-        <h3 style="margin: 25px 0 10px 0; font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 5px;">Cronograma do Dia</h3>
         <ul class="activities-list" id="activitiesList"></ul>
     </aside>
 </main>
@@ -188,37 +193,24 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // LISTAGEM COMPLETA DAS SALAS CONFORME SOLICITADO
   const andares = {
       "1º ANDAR": [
-          { id: "311", label: "311 (Turmas 11/14)" },
-          { id: "312", label: "312 (Turmas 21/13)" },
-          { id: "313", label: "313 (Turmas 22/15)" },
-          { id: "314", label: "314 (Turmas 51/53)" }
+          { id: "311", label: "311 (Turmas 11/14)" }, { id: "312", label: "312 (Turmas 21/13)" },
+          { id: "313", label: "313 (Turmas 22/15)" }, { id: "314", label: "314 (Turmas 51/53)" }
       ],
       "2º ANDAR": [
-          { id: "320", label: "320 (Turma 81)" },
-          { id: "321", label: "321 (Turma 62)" },
-          { id: "322", label: "322 (Turmas 72/23)" },
-          { id: "323", label: "323 (Turmas 61/24)" },
-          { id: "324", label: "324 (Turma 92)" },
-          { id: "325", label: "325 (Turmas 52/54)" },
-          { id: "326", label: "326 (Turmas 32/34)" },
-          { id: "327", label: "327 (Turmas 31/33)" },
-          { id: "328", label: "328 (Turmas 41/43)" },
-          { id: "329", label: "329 (Turmas 42/44)" }
+          { id: "320", label: "320 (Turma 81)" }, { id: "321", label: "321 (Turma 62)" },
+          { id: "322", label: "322 (Turmas 72/23)" }, { id: "323", label: "323 (Turmas 61/24)" },
+          { id: "324", label: "324 (Turma 92)" }, { id: "325", label: "325 (Turmas 52/54)" },
+          { id: "326", label: "326 (Turmas 32/34)" }, { id: "327", label: "327 (Turmas 31/33)" },
+          { id: "328", label: "328 (Turmas 41/43)" }, { id: "329", label: "329 (Turmas 42/44)" }
       ],
       "3º ANDAR": [
-          { id: "330", label: "330 (Turma 82)" },
-          { id: "331", label: "331 (Turma 202)" },
-          { id: "332", label: "332 (Turma 201)" },
-          { id: "333", label: "333 (Turma 301)" },
-          { id: "334", label: "334 (Turma 302)" },
-          { id: "335", label: "335 (Turmas 101/73)" },
-          { id: "336", label: "336 (Turmas 93/83)" },
-          { id: "337", label: "337 (Turmas 71/63)" },
-          { id: "338", label: "338 (Turmas 91/64)" },
-          { id: "339", label: "339 (Turma 102)" }
+          { id: "330", label: "330 (Turma 82)" }, { id: "331", label: "331 (Turma 202)" },
+          { id: "332", label: "332 (Turma 201)" }, { id: "333", label: "333 (Turma 301)" },
+          { id: "334", label: "334 (Turma 302)" }, { id: "335", label: "335 (Turmas 101/73)" },
+          { id: "336", label: "336 (Turmas 93/83)" }, { id: "337", label: "337 (Turmas 71/63)" },
+          { id: "338", label: "338 (Turmas 91/64)" }, { id: "339", label: "339 (Turma 102)" }
       ]
   };
 
@@ -228,7 +220,6 @@
   const roomsRef = ref(db, 'rooms');
   const activitiesRef = ref(db, 'activities');
 
-  // RESET DIÁRIO GLOBAL
   onValue(ref(db, 'metadata/lastReset'), (snap) => {
       const today = new Date().toLocaleDateString();
       if (snap.val() && snap.val() !== today) {
@@ -238,17 +229,14 @@
       document.getElementById('displayDate').innerText = today;
   });
 
-  // RENDERIZAR SALAS COM TEXTOS COMPLETOS
   onValue(roomsRef, (snap) => {
       const data = snap.val() || {};
       const container = document.getElementById('roomsContainer');
       container.innerHTML = '';
-
       for (const andar in andares) {
           container.innerHTML += `<div class="floor-title">${andar}</div>`;
           const grid = document.createElement('div');
           grid.className = 'rooms-grid';
-
           andares[andar].forEach(sala => {
               const recordedBy = data[sala.id];
               grid.innerHTML += `
@@ -262,8 +250,8 @@
                         </div>
                     ` : `
                         <div style="font-weight:bold; color:var(--primary-green); text-align:center;">
-                            ✅ CONCLUÍDO: ${recordedBy.toUpperCase()}
-                            <button class="btn-reset action-reset" data-id="${sala.id}">DESFAZER</button>
+                            ✅ OK: ${recordedBy.toUpperCase()}
+                            <button class="btn-reset action-reset" data-id="${sala.id}">REFAZER</button>
                         </div>
                     `}
                 </div>`;
@@ -274,20 +262,15 @@
       document.querySelectorAll('.action-reset').forEach(b => b.onclick = () => remove(ref(db, 'rooms/' + b.dataset.id)));
   });
 
-  // RENDERIZAR AGENDA
   onValue(activitiesRef, (snap) => {
       const data = snap.val() || {};
       const listEl = document.getElementById('activitiesList');
       const optMat = document.getElementById('optMatutino');
       const optVesp = document.getElementById('optVespertino');
-      
       listEl.innerHTML = ''; optMat.innerHTML = ''; optVesp.innerHTML = '';
       const actsArray = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
-      
-      const checkH = (h, cont) => { if (!actsArray.some(a => a.time === h)) cont.innerHTML += `<option value="${h}">${h}</option>`; };
-      hMatutino.forEach(h => checkH(h, optMat));
-      hVespertino.forEach(h => checkH(h, optVesp));
-
+      hMatutino.forEach(h => { if (!actsArray.some(a => a.time === h)) optMat.innerHTML += `<option value="${h}">${h}</option>`; });
+      hVespertino.forEach(h => { if (!actsArray.some(a => a.time === h)) optVespertino.innerHTML += `<option value="${h}">${h}</option>`; });
       actsArray.sort((a,b) => a.time.localeCompare(b.time)).forEach(act => {
           const isVesp = hVespertino.includes(act.time);
           listEl.innerHTML += `
@@ -314,8 +297,7 @@
       document.querySelectorAll('.action-assign').forEach(b => b.onclick = () => update(ref(db, 'activities/' + b.dataset.id), { assignedTo: b.dataset.user || null }));
   });
 
-  window.rmvAct = (id) => { if(confirm("Apagar agendamento?")) remove(ref(db, 'activities/' + id)); };
-
+  window.rmvAct = (id) => { if(confirm("Remover?")) remove(ref(db, 'activities/' + id)); };
   document.getElementById('btnAddActivity').onclick = () => {
       const title = document.getElementById('actTitle').value;
       const room = document.getElementById('actRoomSelect').value;
@@ -323,13 +305,10 @@
       if (title && room && time) {
           push(activitiesRef, { title, room, time, assignedTo: null });
           document.getElementById('actTitle').value = '';
-      } else alert("Preencha todos os campos!");
+      } else alert("Preencha tudo!");
   };
-
   const sel = document.getElementById('actRoomSelect');
-  for (const andar in andares) {
-      andares[andar].forEach(s => sel.innerHTML += `<option value="${s.id}">Sala ${s.id}</option>`);
-  }
+  for (const andar in andares) andares[andar].forEach(s => sel.innerHTML += `<option value="${s.id}">Sala ${s.id}</option>`);
 </script>
 </body>
 </html>
