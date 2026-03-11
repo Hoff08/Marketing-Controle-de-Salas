@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Gravações Diário</title>
+    <title>Sistema Marketing - Colégio Conhecimento</title>
     <style>
         :root {
-            --primary: #2563eb; /* Azul */
-            --Vicenzo: #10b981; /* Verde */
-            --maria: #8b5cf6; /* Roxo */
-            --bg: #f8fafc;
+            --primary-red: #9c0c11;
+            --primary-green: #00a859;
+            --white: #ffffff;
+            --bg: #f4f4f4;
             --card: #ffffff;
-            --text: #1e293b;
+            --text: #333333;
         }
 
         body {
@@ -19,32 +19,31 @@
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            /* Removido o overflow e height fixo para a página toda rolar */
             min-height: 100vh;
         }
 
         header {
-            background: var(--primary);
-            color: white;
-            padding: 1.5rem;
+            background: var(--primary-red);
+            color: var(--white);
+            padding: 1.2rem;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            border-bottom: 4px solid var(--primary-green);
         }
+
+        header h1 { margin: 0; font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; }
 
         main {
             display: flex;
             padding: 20px;
             gap: 20px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            align-items: flex-start; /* Alinha o topo das colunas */
+            align-items: flex-start;
         }
 
-        /* Seção das Salas */
-        .rooms-section {
-            flex: 2;
-        }
-
+        .rooms-section { flex: 2; }
+        
         .rooms-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -55,206 +54,291 @@
             background: var(--card);
             border-radius: 12px;
             padding: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            border-top: 5px solid #cbd5e1;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-top: 5px solid #ccc;
             transition: all 0.3s ease;
         }
 
-        .room-card.recorded {
-            border-top-color: var(--primary);
-            background-color: #f1f5f9;
-        }
-
-        .room-card h3 { margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .room-card.recorded { border-top-color: var(--primary-green); background-color: #f9fff9; }
+        .room-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--primary-red); }
+        .room-card p { margin: 0 0 10px 0; font-size: 0.85rem; color: #666; }
 
         .btn-group { display: flex; flex-direction: column; gap: 8px; }
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 10px; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; }
 
-        button {
-            cursor: pointer;
-            border: none;
-            border-radius: 6px;
-            padding: 10px;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
+        .btn-Vicenzo { background-color: var(--primary-green); color: white; }
+        .btn-maria { background-color: var(--primary-red); color: white; }
+        .btn-reset { background-color: #444; color: white; margin-top: 10px; width: 100%; font-size: 0.7rem; }
 
-        .btn-Vicenzo { background-color: var(--Vicenzo); color: white; }
-        .btn-maria { background-color: var(--maria); color: white; }
-        .btn-reset { background-color: #ef4444; color: white; margin-top: 10px; width: 100%; font-size: 0.8rem; }
-
-        .info-record { margin-top: 10px; font-weight: bold; display: none; text-align: center; }
-
-        /* Barra Lateral (Sticky para acompanhar o scroll no Desktop) */
         .sidebar {
             flex: 1;
             background: var(--card);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            position: -webkit-sticky;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: sticky;
-            top: 20px; /* Gruda no topo ao rolar */
+            top: 20px;
+            border-top: 5px solid var(--primary-red);
         }
 
-        .activity-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .activity-form { display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        
+        .btn-add { background-color: var(--primary-red); color: white; padding: 12px; margin-top: 5px; }
 
-        input, select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
-
-        .btn-add { background-color: var(--primary); color: white; }
-
-        .activities-list { list-style: none; padding: 0; }
-
+        .activities-list { list-style: none; padding: 0; margin-top: 20px; }
+        
         .activity-item {
-            background: #f1f5f9;
-            padding: 12px;
+            background: #fff;
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--primary);
+            margin-bottom: 12px;
+            border-left: 6px solid var(--primary-red);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             position: relative;
         }
 
-        .delete-act { position: absolute; right: 10px; top: 10px; color: #ef4444; cursor: pointer; font-weight: bold; font-size: 1.2rem; }
+        .period-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #eee;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        
+        .assign-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
 
-        /* Ajustes para Celular */
+        .assign-btns { display: flex; gap: 5px; margin-top: 5px; }
+        .btn-small { padding: 6px; font-size: 0.65rem; flex: 1; }
+
+        .assigned-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            width: 100%;
+            text-align: center;
+        }
+
+        .delete-act { position: absolute; right: 10px; top: 10px; color: #ccc; cursor: pointer; font-size: 1.2rem; }
+
         @media (max-width: 768px) {
-            main { flex-direction: column; align-items: stretch; }
-            .sidebar { position: static; order: -1; } /* Atividades ficam em cima no celular */
+            main { flex-direction: column; }
+            .sidebar { position: static; order: -1; width: 100%; box-sizing: border-box;}
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Controle de Salas - <span id="currentDate"></span></h1>
+    <h1>Controle Marketing - <span id="displayDate"></span></h1>
 </header>
 
 <main>
-    <!-- Área das Salas -->
     <section class="rooms-section">
         <div class="rooms-grid" id="roomsGrid"></div>
     </section>
 
-    <!-- Barra Lateral -->
     <aside class="sidebar">
-        <h2 style="margin-top:0">Atividades Especiais</h2>
+        <h2 style="margin-top:0; font-size: 1.2rem; color: var(--primary-red);">Agendar Atividade</h2>
         <div class="activity-form">
-            <input type="text" id="actTitle" placeholder="O que vai ter?">
-            <select id="actRoom">
-                <option value="">Qual sala?</option>
-                <script>for(let i=1; i<=10; i++) document.write(`<option value="${i}">Sala ${i}</option>`);</script>
+            <input type="text" id="actTitle" placeholder="Título da Atividade / Turma">
+            <select id="actRoomSelect"></select>
+            <select id="actTimeSelect">
+                <option value="">Selecione o Horário</option>
+                <optgroup label="MATUTINO" id="optMatutino"></optgroup>
+                <optgroup label="VESPERTINO" id="optVespertino"></optgroup>
             </select>
-            <input type="time" id="actTime">
-            <button class="btn-add" onclick="addActivity()">Adicionar Atividade</button>
+            <button class="btn-add" id="btnAddActivity">Agendar Agora</button>
         </div>
-        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        
+        <h3 style="margin: 20px 0 10px 0; font-size: 1rem; color: #666; border-bottom: 1px solid #eee;">Lista de Atividades do Dia:</h3>
         <ul class="activities-list" id="activitiesList"></ul>
     </aside>
 </main>
 
-<script>
-    // --- LÓGICA DE DATAS E AUTO-RESET ---
-    function checkDailyReset() {
-        const today = new Date().toLocaleDateString();
-        const lastDate = localStorage.getItem('lastAccessDate');
-        document.getElementById('currentDate').innerText = today;
+<!-- Inclusão do Firebase via Módulos -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-database.js";
 
-        if (lastDate && lastDate !== today) {
-            localStorage.removeItem('roomsData');
-            localStorage.removeItem('activitiesData');
-        }
-        localStorage.setItem('lastAccessDate', today);
-    }
+  const firebaseConfig = {
+    apiKey: "AIzaSyDYdUm51PqF3YUhRKp7HRyYCQMo8BDFue8",
+    authDomain: "conhecimento-marketing.firebaseapp.com",
+    databaseURL: "https://conhecimento-marketing-default-rtdb.firebaseio.com",
+    projectId: "conhecimento-marketing",
+    storageBucket: "conhecimento-marketing.firebasestorage.app",
+    messagingSenderId: "555927054528",
+    appId: "1:555927054528:web:82cb8bfde157e986c16525",
+    measurementId: "G-59Q4HXE2DZ"
+  };
 
-    // --- GERENCIAMENTO DE DADOS ---
-    let roomsData = JSON.parse(localStorage.getItem('roomsData')) || {};
-    let activitiesData = JSON.parse(localStorage.getItem('activitiesData')) || [];
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    function saveData() {
-        localStorage.setItem('roomsData', JSON.stringify(roomsData));
-        localStorage.setItem('activitiesData', JSON.stringify(activitiesData));
-    }
+  // Variáveis de Controle
+  const salasMapa = [
+      { id: "311", label: "311 (Turmas 11/14)" }, { id: "312", label: "312 (Turmas 21/13)" },
+      { id: "313", label: "313 (Turmas 22/15)" }, { id: "314", label: "314 (Turmas 51/53)" },
+      { id: "320", label: "320 (Turma 81)" }, { id: "321", label: "321 (Turma 62)" },
+      { id: "322", label: "322 (Turmas 72/23)" }, { id: "323", label: "323 (Turmas 61/24)" },
+      { id: "324", label: "324 (Turma 92)" }, { id: "325", label: "325 (Turmas 52/54)" },
+      { id: "326", label: "326 (Turmas 32/34)" }, { id: "327", label: "327 (Turmas 31/33)" },
+      { id: "328", label: "328 (Turmas 41/43)" }, { id: "329", label: "329 (Turmas 42/44)" },
+      { id: "330", label: "330 (Turma 82)" }, { id: "331", label: "331 (Turma 202)" },
+      { id: "332", label: "332 (Turma 201)" }, { id: "333", label: "333 (Turma 301)" },
+      { id: "334", label: "334 (Turma 302)" }, { id: "335", label: "335 (Turmas 101/73)" },
+      { id: "336", label: "336 (Turmas 93/83)" }, { id: "337", label: "337 (Turmas 71/63)" },
+      { id: "338", label: "338 (Turmas 91/64)" }, { id: "339", label: "339 (Turma 102)" }
+  ];
 
-    // --- FUNÇÕES DAS SALAS ---
-    function renderRooms() {
-        const grid = document.getElementById('roomsGrid');
-        grid.innerHTML = '';
-        
-        for (let i = 1; i <= 10; i++) {
-            const isRecorded = roomsData[i];
-            const card = document.createElement('div');
-            card.className = `room-card ${isRecorded ? 'recorded' : ''}`;
-            
-            card.innerHTML = `
-                <h3>Sala ${i} ${isRecorded ? '✅' : ''}</h3>
-                <div id="ctrl-${i}" style="display: ${isRecorded ? 'none' : 'flex'}" class="btn-group">
-                    <button class="btn-Vicenzo" onclick="markRoom(${i}, 'Vicenzo')">Vicenzo</button>
-                    <button class="btn-maria" onclick="markRoom(${i}, 'Maria')">Maria</button>
-                </div>
-                <div id="info-${i}" style="display: ${isRecorded ? 'block' : 'none'}" class="info-record">
-                    <p>Gravado por: <br><span style="color:${isRecorded === 'Vicenzo' ? 'var(--Vicenzo)' : 'var(--maria)'}">${isRecorded}</span></p>
-                    <button class="btn-reset" onclick="resetRoom(${i})">Desfazer</button>
-                </div>
-            `;
-            grid.appendChild(card);
-        }
-    }
+  const hMatutino = ["07:30", "08:00", "08:20", "08:40", "09:00", "09:20", "09:40", "10:00", "10:20", "10:40", "11:00", "11:20"];
+  const hVespertino = ["13:15", "13:30", "13:50", "14:10", "14:30", "14:50", "15:10", "15:30", "15:50", "16:10", "16:30", "16:50"];
 
-    function markRoom(num, person) {
-        roomsData[num] = person;
-        saveData();
-        renderRooms();
-    }
+  // --- LÓGICA DE SINCRONIZAÇÃO EM TEMPO REAL ---
 
-    function resetRoom(num) {
-        delete roomsData[num];
-        saveData();
-        renderRooms();
-    }
+  const roomsRef = ref(db, 'rooms');
+  const activitiesRef = ref(db, 'activities');
+  const metadataRef = ref(db, 'metadata');
 
-    // --- FUNÇÕES DE ATIVIDADES ---
-    function renderActivities() {
-        const list = document.getElementById('activitiesList');
-        list.innerHTML = '';
-        activitiesData.forEach((act, index) => {
-            const li = document.createElement('li');
-            li.className = 'activity-item';
-            li.innerHTML = `
-                <span class="delete-act" onclick="removeActivity(${index})">×</span>
+  // Verificar Reset Diário Global
+  onValue(ref(db, 'metadata/lastReset'), (snapshot) => {
+      const today = new Date().toLocaleDateString();
+      const lastReset = snapshot.val();
+      document.getElementById('displayDate').innerText = today;
+
+      if (lastReset && lastReset !== today) {
+          set(roomsRef, null);
+          set(activitiesRef, null);
+          set(metadataRef, { lastReset: today });
+      } else if (!lastReset) {
+          set(metadataRef, { lastReset: today });
+      }
+  });
+
+  // Atualizar Salas na Tela
+  onValue(roomsRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const grid = document.getElementById('roomsGrid');
+      grid.innerHTML = '';
+
+      salasMapa.forEach(sala => {
+          const recordedBy = data[sala.id];
+          const card = document.createElement('div');
+          card.className = `room-card ${recordedBy ? 'recorded' : ''}`;
+          card.innerHTML = `
+                <h3>Sala ${sala.id}</h3>
+                <p>${sala.label}</p>
+                ${!recordedBy ? `
+                    <div class="btn-group">
+                        <button class="btn-Vicenzo action-record" data-id="${sala.id}" data-user="Vicenzo">Vicenzo</button>
+                        <button class="btn-maria action-record" data-id="${sala.id}" data-user="Maria">Maria</button>
+                    </div>
+                ` : `
+                    <div style="text-align:center; font-weight:bold; color:var(--primary-green);">
+                        ✅ POR: ${recordedBy.toUpperCase()}
+                        <button class="btn-reset action-reset" data-id="${sala.id}">Resetar</button>
+                    </div>
+                `}
+          `;
+          grid.appendChild(card);
+      });
+
+      // Reatribuir eventos aos botões gerados
+      document.querySelectorAll('.action-record').forEach(b => b.onclick = () => markRoom(b.dataset.id, b.dataset.user));
+      document.querySelectorAll('.action-reset').forEach(b => b.onclick = () => resetRoom(b.dataset.id));
+  });
+
+  // Atualizar Atividades na Tela
+  onValue(activitiesRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const listEl = document.getElementById('activitiesList');
+      const selectTime = document.getElementById('actTimeSelect');
+      const optMat = document.getElementById('optMatutino');
+      const optVesp = document.getElementById('optVespertino');
+      
+      listEl.innerHTML = '';
+      optMat.innerHTML = '';
+      optVesp.innerHTML = '';
+
+      const activitiesArray = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
+      
+      // Renderizar seletor de horários (escondendo os ocupados)
+      const renderTimeOption = (h, container) => {
+          if (!activitiesArray.some(a => a.time === h)) {
+              container.innerHTML += `<option value="${h}">${h}</option>`;
+          }
+      }
+      hMatutino.forEach(h => renderTimeOption(h, optMat));
+      hVespertino.forEach(h => renderTimeOption(h, optVesp));
+
+      // Renderizar Lista
+      activitiesArray.sort((a,b) => a.time.localeCompare(b.time)).forEach(act => {
+          const isVesp = hVespertino.includes(act.time);
+          const li = document.createElement('li');
+          li.className = 'activity-item';
+          li.innerHTML = `
+                <span class="delete-act" data-id="${act.id}">×</span>
+                <span class="period-badge">${isVesp ? 'VESPERTINO' : 'MATUTINO'}</span>
                 <strong>${act.title}</strong>
-                <span>Sala ${act.room} às ${act.time}</span>
-            `;
-            list.appendChild(li);
-        });
-    }
+                <span style="font-size:0.9rem">Sala: ${act.room} | 🕒 ${act.time}</span>
+                <div class="assign-section">
+                    ${!act.assignedTo ? `
+                        <div class="assign-btns">
+                            <button class="btn-Vicenzo btn-small action-assign" data-id="${act.id}" data-user="Vicenzo">Vicenzo</button>
+                            <button class="btn-maria btn-small action-assign" data-id="${act.id}" data-user="Maria">Maria</button>
+                        </div>
+                    ` : `
+                        <div class="assigned-tag" style="background-color: ${act.assignedTo === 'Vicenzo' ? 'var(--primary-green)' : 'var(--primary-red)'}">
+                            CONFIRMADO: ${act.assignedTo}
+                        </div>
+                        <center><button class="action-assign" data-id="${act.id}" data-user="" style="background:none; color:#999; border:none; font-size:0.6rem; cursor:pointer;">MUDAR</button></center>
+                    `}
+                </div>
+          `;
+          listEl.appendChild(li);
+      });
 
-    function addActivity() {
-        const title = document.getElementById('actTitle').value;
-        const room = document.getElementById('actRoom').value;
-        const time = document.getElementById('actTime').value;
+      // Eventos Atividades
+      document.querySelectorAll('.delete-act').forEach(b => b.onclick = () => removeActivity(b.dataset.id));
+      document.querySelectorAll('.action-assign').forEach(b => b.onclick = () => assignActivity(b.dataset.id, b.dataset.user));
+  });
 
-        if (title && room && time) {
-            activitiesData.push({ title, room, time });
-            saveData();
-            renderActivities();
-            document.getElementById('actTitle').value = '';
-            document.getElementById('actRoom').value = '';
-            document.getElementById('actTime').value = '';
-        } else {
-            alert("Preencha todos os campos!");
-        }
-    }
+  // Funções de Banco de Dados
+  function markRoom(id, user) { set(ref(db, 'rooms/' + id), user); }
+  function resetRoom(id) { remove(ref(db, 'rooms/' + id)); }
+  function removeActivity(id) { if(confirm("Remover?")) remove(ref(db, 'activities/' + id)); }
+  function assignActivity(id, user) { 
+      if(!user) update(ref(db, 'activities/' + id), { assignedTo: null });
+      else update(ref(db, 'activities/' + id), { assignedTo: user }); 
+  }
 
-    function removeActivity(index) {
-        activitiesData.splice(index, 1);
-        saveData();
-        renderActivities();
-    }
+  document.getElementById('btnAddActivity').onclick = () => {
+      const title = document.getElementById('actTitle').value;
+      const room = document.getElementById('actRoomSelect').value;
+      const time = document.getElementById('actTimeSelect').value;
 
-    // --- INICIALIZAÇÃO ---
-    checkDailyReset();
-    renderRooms();
-    renderActivities();
+      if (title && room && time) {
+          const newActRef = push(activitiesRef);
+          set(newActRef, { title, room, time, assignedTo: null });
+          document.getElementById('actTitle').value = '';
+      } else {
+          alert("Preencha tudo!");
+      }
+  };
+
+  // Preencher Select de Salas uma única vez
+  const selectSala = document.getElementById('actRoomSelect');
+  selectSala.innerHTML = '<option value="">Selecione a Sala</option>';
+  salasMapa.forEach(sala => selectSala.innerHTML += `<option value="${sala.id}">${sala.label}</option>`);
+
 </script>
-
 </body>
 </html>
